@@ -79,23 +79,25 @@ func (tr *Trie) AddPattern(pattern string) *Trie {
 	return tr
 }
 
+func (tr *Trie) Build() {
+
+}
+
 func (tr *Trie) Match(input string) {
 	bi := []byte(input)
 
 	for i := 0; i < len(bi); i++ {
 		s := 0
-
 		for j, b := range bi[i:] {
 			c := int(b)
 			t := tr.base[s] + c
-
-			if tr.dict[s] {
-				p := tr.path(s)
-				log.Printf("matched: %q at offset %d", p, i+j-len(p))
-			}
-
 			if tr.check[t] == s {
 				s = t
+				if tr.dict[s] {
+					p := tr.path(s)
+					log.Printf("matched: %q at offset %d", p, i+j-len(p))
+				}
+
 			} else {
 				break
 			}
@@ -181,6 +183,7 @@ func (tr *Trie) relocate(s int) {
 		tr.check[t_] = s // Mark owner at new t location.
 		// log.Printf("[relocation] set base[%d] = base[%d] = %d", t_, t, tr.base[t])
 		tr.base[t_] = tr.base[t] // Copy base value to new location
+		tr.dict[t_] = tr.dict[t] // Copy dict value.
 
 		// Update all pointers to t to new t.
 		for i, x := range tr.check {
@@ -190,7 +193,8 @@ func (tr *Trie) relocate(s int) {
 		}
 
 		// log.Printf("[relocation] set check[%d] = -1", t)
-		tr.check[t] = -1 // Free cell at old t.
+		tr.check[t] = -1   // Free cell at old t.
+		tr.dict[t] = false // Free dict at old t.
 	}
 
 	// Update base value.

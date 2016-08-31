@@ -20,12 +20,8 @@ func TestFuckAll(t *testing.T) {
 		tr.AddPattern(str)
 	}
 
-	for _, str := range testStrings {
-		if !tr.Run(str) {
-			t.Error("didn't accept")
-		}
-	}
+	tr.Build()
 
-	tr.Match("footballz")
+	tr.Match("footballz and bazars are bar foobar")
 
 }
