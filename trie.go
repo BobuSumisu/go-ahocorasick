@@ -6,6 +6,8 @@ type Trie struct {
 	base         []int
 	check        []int
 	dict         []bool
+	fail         []int
+	suf          []int
 	alphabetSize int
 }
 
@@ -81,6 +83,67 @@ func (tr *Trie) AddPattern(pattern string) *Trie {
 
 func (tr *Trie) Build() {
 
+	// Initialize arrays
+	tr.fail = make([]int, len(tr.base))
+	tr.suf = make([]int, len(tr.base))
+
+	for i := 0; i < len(tr.base); i++ {
+		tr.fail[i] = -1
+		tr.suf[i] = -1
+	}
+
+	tr.fail[0] = 0 // Root fails to itself.
+
+	for s := 0; s < len(tr.base); s++ {
+		tr.computeFailLink(s)
+	}
+
+	for s := 0; s < len(tr.base); s++ {
+		tr.computeSufLinks(s)
+	}
+
+}
+
+func (tr *Trie) computeFailLink(s int) {
+	p := tr.check[s] // The parent of this state.
+	if p == -1 {     // No transitions to this state, ignore.
+		return
+	}
+
+	tr.computeFailLink(p) // Need to compute parent's fail links first.
+	c := s - tr.base[p]   // The symbol into this state.
+
+	if p == 0 {
+		tr.fail[s] = 0 // Child of root fails to root
+	} else {
+		// Follow fail links (starting from parent) until we find a state with a transition
+		// on c.
+		for f := tr.fail[p]; f > 0; f = tr.fail[f] {
+			tr.computeFailLink(f)
+			if tr.check[tr.base[f]+c] == f {
+				tr.fail[s] = tr.base[f] + c
+			}
+		}
+
+		// If we didn't find any fail link.
+		if tr.fail[s] == -1 {
+			// Check if root has a transition on c.
+			if tr.check[tr.base[0]+c] == 0 {
+				tr.fail[s] = tr.base[0] + c
+			} else {
+				tr.fail[s] = 0 // Else fail to root.
+			}
+		}
+	}
+}
+
+func (tr *Trie) computeSufLinks(s int) {
+	for f := tr.fail[s]; f > 0; f = tr.fail[f] {
+		if tr.dict[f] {
+			tr.suf[s] = f
+			return
+		}
+	}
 }
 
 func (tr *Trie) Match(input string) {
@@ -94,8 +157,8 @@ func (tr *Trie) Match(input string) {
 			if tr.check[t] == s {
 				s = t
 				if tr.dict[s] {
-					p := tr.path(s)
-					log.Printf("matched: %q at offset %d", p, i+j-len(p))
+					p := tr.pathString(s)
+					log.Printf("matched: %q at offset %d", p, i+j-len(p)+1)
 				}
 
 			} else {
@@ -103,7 +166,45 @@ func (tr *Trie) Match(input string) {
 			}
 		}
 	}
+}
 
+func (tr *Trie) RealMatch(input string) {
+	s := 0
+
+	for i, b := range []byte(input) {
+		c := int(b)
+
+		s = tr.step(s, c)
+
+		if tr.dict[s] {
+			p := tr.pathString(s)
+			log.Printf("matched %q at %d", p, i+1-len(p))
+		}
+
+		for u := tr.suf[s]; u > 0; u = tr.suf[u] {
+			p := tr.pathString(u)
+			log.Printf("matched %q at %d", p, i+1-len(p))
+		}
+	}
+}
+
+func (tr *Trie) step(s, c int) int {
+	// If s has a transition on c, return that.
+	t := tr.base[s] + c
+	if t < len(tr.check) && tr.check[t] == s {
+		return t
+	}
+
+	// Else walk fail links.
+	for f := tr.fail[s]; f > 0; f = tr.fail[f] {
+		t := tr.base[f] + c
+		if t < len(tr.check) && tr.check[t] == f {
+			return t // Return fail link's child if it has transition on c.
+		}
+	}
+
+	// Or simply return root
+	return 0
 }
 
 func (tr *Trie) Run(input string) bool {
@@ -218,6 +319,15 @@ func (tr *Trie) path(t int) []int {
 	c := t - tr.base[s]
 
 	return append(tr.path(s), c)
+}
+
+func (tr *Trie) pathString(s int) string {
+	p := tr.path(s)
+	bs := make([]byte, len(p))
+	for i := range p {
+		bs[i] = byte(p[i])
+	}
+	return string(bs)
 }
 
 // Ensure our arrays are long enough.
