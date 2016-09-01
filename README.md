@@ -18,28 +18,36 @@ trie := NewTrieBuilder().
 
 Match something:
 
-    matches := trie.MatchString("I have never tasted a hershey bar.")
-    fmt.Printf("We got %d matches.\n", len(matches))
+```go
+matches := trie.MatchString("I have never tasted a hershey bar.")
+fmt.Printf("We got %d matches.\n", len(matches))
 
-    // => We got 4 matches.
+// => We got 4 matches.
+```
 
 Examine matches:
 
-    for _, match := range matches {
-        fmt.Printf("Matched %q at offset %d.\n", match.Match(), match.Pos())
-    }
+```go
+for _, match := range matches {
+    fmt.Printf("Matched %q at offset %d.\n", match.Match(), match.Pos())
+}
 
-    // => Matched "he" at offset 22.
-    // => Matched "hers" at offset 22.
-    // => Matched "she" at offset 25.
-    // => Matched "he" at offset 26.
+// => Matched "he" at offset 22.
+// => Matched "hers" at offset 22.
+// => Matched "she" at offset 25.
+// => Matched "he" at offset 26.
+```
 
 For debugging you may output the trie in DOT format:
 
-    NewTrieGrapher(trie).DrawFailLinks(true).Graph("example.dot")
+```go
+NewTrieGrapher(trie).DrawFailLinks(true).Graph("example.dot")
+```
 
 And convert to image, e.g.:
 
+```bash
     $ dot -Tpng -o example.png example.dot
+```
 
 ![example-trie](example.png)
