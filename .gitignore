@@ -1,4 +1,5 @@
 *.dot
 *.png
+!example.png
 *.pprof
 profile/main
