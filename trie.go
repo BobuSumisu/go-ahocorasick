@@ -23,7 +23,7 @@ func (tr *Trie) MatchInts(input []int64) []*IntMatch {
 		}
 
 		for f := tr.suff[s]; f > 0; f = tr.suff[f] {
-			pos := int64(i) - tr.patternLen(s) + 1
+			pos := int64(i) - tr.patternLen(f) + 1
 			matches = append(matches, NewIntMatch(pos, input[pos:i+1]))
 		}
 	}
@@ -93,8 +93,8 @@ func (tr *Trie) path(t int64) []int64 {
 }
 
 func (tr *Trie) patternLen(s int64) int64 {
-	if tr.check[s] == -1 {
-		return 0
+	if tr.check[s] == 0 {
+		return 1
 	}
 
 	return tr.patternLen(tr.check[s]) + 1
