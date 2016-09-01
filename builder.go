@@ -1,28 +1,27 @@
 package ahocorasick
 
 const (
-	RootState   int64 = 0
-	EmptyCell   int64 = -1
-	DefaultBase int64 = 0
+	AlphabetSize int64 = 256
+	RootState    int64 = 0
+	EmptyCell    int64 = -1
+	DefaultBase  int64 = 0
 )
 
 type TrieBuilder struct {
-	base         []int64
-	check        []int64
-	dict         []bool
-	fail         []int64
-	suff         []int64
-	alphabetSize int64
+	base  []int64
+	check []int64
+	dict  []bool
+	fail  []int64
+	suff  []int64
 }
 
-func NewTrieBuilder(alphabetSize int64) *TrieBuilder {
+func NewTrieBuilder() *TrieBuilder {
 	tb := &TrieBuilder{
-		base:         make([]int64, 0),
-		check:        make([]int64, 0),
-		dict:         make([]bool, 0),
-		fail:         make([]int64, 0),
-		suff:         make([]int64, 0),
-		alphabetSize: alphabetSize,
+		base:  make([]int64, 0),
+		check: make([]int64, 0),
+		dict:  make([]bool, 0),
+		fail:  make([]int64, 0),
+		suff:  make([]int64, 0),
 	}
 
 	// Add the root state.
@@ -31,11 +30,11 @@ func NewTrieBuilder(alphabetSize int64) *TrieBuilder {
 	return tb
 }
 
-func (tb *TrieBuilder) AddIntPattern(pattern []int64) *TrieBuilder {
+func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 	s := RootState
 
 	for _, c := range pattern {
-		t := tb.base[s] + c
+		t := tb.base[s] + int64(c)
 
 		if t >= int64(len(tb.check)) || tb.check[t] == EmptyCell {
 			// Cell is empty: expand arrays and set transition.
@@ -60,7 +59,7 @@ func (tb *TrieBuilder) AddIntPattern(pattern []int64) *TrieBuilder {
 			// Update s and t if o had transitions to s.
 			if oc != -1 {
 				s = tb.base[o] + oc
-				t = tb.base[s] + c
+				t = tb.base[s] + int64(c)
 			}
 
 			// Set transition.
@@ -77,35 +76,20 @@ func (tb *TrieBuilder) AddIntPattern(pattern []int64) *TrieBuilder {
 	return tb
 }
 
-func (tb *TrieBuilder) AddBytePattern(pattern []byte) *TrieBuilder {
-	intPattern := make([]int64, len(pattern))
-	for i := range pattern {
-		intPattern[i] = int64(pattern[i])
-	}
-	return tb.AddIntPattern(intPattern)
-}
-
-func (tb *TrieBuilder) AddStringPattern(pattern string) *TrieBuilder {
-	return tb.AddBytePattern([]byte(pattern))
-}
-
-func (tb *TrieBuilder) AddIntPatterns(patterns [][]int64) *TrieBuilder {
+func (tb *TrieBuilder) AddPatterns(patterns [][]byte) *TrieBuilder {
 	for _, pattern := range patterns {
-		tb.AddIntPattern(pattern)
+		tb.AddPattern(pattern)
 	}
 	return tb
 }
 
-func (tb *TrieBuilder) AddBytePatterns(patterns [][]byte) *TrieBuilder {
-	for _, pattern := range patterns {
-		tb.AddBytePattern(pattern)
-	}
-	return tb
+func (tb *TrieBuilder) AddString(pattern string) *TrieBuilder {
+	return tb.AddPattern([]byte(pattern))
 }
 
-func (tb *TrieBuilder) AddStringPatterns(patterns []string) *TrieBuilder {
+func (tb *TrieBuilder) AddStrings(patterns []string) *TrieBuilder {
 	for _, pattern := range patterns {
-		tb.AddStringPattern(pattern)
+		tb.AddString(pattern)
 	}
 	return tb
 }
@@ -134,12 +118,11 @@ func (tb *TrieBuilder) Build() *Trie {
 
 	// Should I copy these slices over or?
 	return &Trie{
-		base:         tb.base,
-		check:        tb.check,
-		dict:         tb.dict,
-		fail:         tb.fail,
-		suff:         tb.suff,
-		alphabetSize: tb.alphabetSize,
+		base:  tb.base,
+		check: tb.check,
+		dict:  tb.dict,
+		fail:  tb.fail,
+		suff:  tb.suff,
 	}
 }
 
@@ -177,7 +160,7 @@ func (tb *TrieBuilder) computeFailLink(s int64) {
 		if tb.fail[s] == EmptyCell {
 			// Check if root has transition on this s' symbol.
 			t := tb.base[RootState] + c
-			if tb.check[t] == RootState {
+			if t < int64(len(tb.check)) && tb.check[t] == RootState {
 				tb.fail[s] = t
 			} else {
 				// Else fail to root.
@@ -212,7 +195,7 @@ func (tb *TrieBuilder) expandArrays(n int64) {
 func (tb *TrieBuilder) relocate(s int64) {
 	// First find all symbols for which s has a transition.
 	cs := make([]int64, 0)
-	for c := int64(0); c < tb.alphabetSize; c++ {
+	for c := int64(0); c < AlphabetSize; c++ {
 		t := tb.base[s] + c
 		if t < int64(len(tb.check)) && tb.check[t] == s {
 			cs = append(cs, c)

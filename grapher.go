@@ -54,7 +54,7 @@ func (tg *TrieGrapher) graphState(s, c int64) {
 		fmt.Fprintf(tg.w, "\t%d [label=%q];\n", s, label(c))
 	}
 
-	for c := int64(0); c < tg.trie.alphabetSize; c++ {
+	for c := int64(0); c < AlphabetSize; c++ {
 		t := tg.trie.base[s] + c
 		if t < int64(len(tg.trie.check)) && tg.trie.check[t] == s {
 			tg.graphState(t, c)
