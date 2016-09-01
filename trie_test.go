@@ -2,8 +2,10 @@ package ahocorasick
 
 import (
 	"bufio"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"strings"
 	"testing"
 )
@@ -155,4 +157,27 @@ func BenchmarkMatchIbsen(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		trie.Match(input[:1000])
 	}
+}
+
+func ExampleReadme() {
+	trie := NewTrieBuilder().
+		AddStrings([]string{"hers", "his", "he", "she"}).
+		Build()
+
+	matches := trie.MatchString("I have never tasted a hershey bar.")
+	fmt.Printf("We got %d matches.\n", len(matches))
+	for _, match := range matches {
+		fmt.Printf("Matched %q at offset %d.\n", match.Match(), match.Pos())
+	}
+
+	NewTrieGrapher(trie).DrawFailLinks(true).Graph("example.dot")
+
+	exec.Command("dot", "-Tpng", "-o", "example.png", "example.dot").Run()
+
+	// Output:
+	// We got 4 matches.
+	// Matched "he" at offset 22.
+	// Matched "hers" at offset 22.
+	// Matched "she" at offset 25.
+	// Matched "he" at offset 26.
 }
