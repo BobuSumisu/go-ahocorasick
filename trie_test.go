@@ -1,11 +1,12 @@
 package ahocorasick
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
 func TestFuckAll(t *testing.T) {
-	tr := NewTrie()
-
-	testStrings := []string{
+	trie := NewTrieBuilder(256).AddStringPatterns([]string{
 		"foo",
 		"bar",
 		"baz",
@@ -14,33 +15,31 @@ func TestFuckAll(t *testing.T) {
 		"øyvind",
 		"foot",
 		"ball",
-	}
-
-	for _, str := range testStrings {
-		tr.AddPattern(str)
-	}
-
+	}).Build()
+	trie.MatchString("hei du")
 	// tr.Build()
 	// tr.Match("footballz and bazars are bar foobar")
 }
 
 func TestWiki(t *testing.T) {
-	tr := NewTrie()
-
-	patterns := []string{"a", "ab", "bab", "bc", "bca", "c", "caa"}
-	for _, p := range patterns {
-		tr.AddPattern(p)
-	}
-	tr.Build()
-
-	tr.RealMatch("alle barna gikk i skogen caa bca c")
+	trie := NewTrieBuilder(256).AddStringPatterns([]string{
+		"a", "ab", "bab", "bc", "bca", "c", "caa",
+	}).Build()
+	trie.MatchString("alle barna gikk i skogen caa bca c")
 }
 
 func TestPrefix(t *testing.T) {
-	tr := NewTrie()
-	for _, s := range []string{"Aho-Corasick", "Aho-Cora", "Aho", "A"} {
-		tr.AddPattern(s)
+	trie := NewTrieBuilder(256).
+		AddStringPatterns([]string{"Aho-Corasick", "Aho-Cora", "Aho", "A"}).
+		Build()
+
+	matches := trie.MatchString("Aho-Corasick")
+
+	if len(matches) != 4 {
+		t.Errorf("expected %d matches, got %d", 4, len(matches))
 	}
-	tr.Build()
-	tr.RealMatch("Aho-Corasick")
+
+	for _, m := range matches {
+		log.Print(m)
+	}
 }

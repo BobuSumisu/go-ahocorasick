@@ -1,16 +1,106 @@
 package ahocorasick
 
-import "log"
-
 type Trie struct {
-	base         []int
-	check        []int
+	base         []int64
+	check        []int64
 	dict         []bool
-	fail         []int
-	suf          []int
-	alphabetSize int
+	fail         []int64
+	suff         []int64
+	alphabetSize int64
 }
 
+func (tr *Trie) MatchInts(input []int64) []*IntMatch {
+	matches := make([]*IntMatch, 0)
+
+	s := RootState
+
+	for i, c := range input {
+		s = tr.step(s, c)
+
+		if tr.dict[s] {
+			pos := int64(i) - tr.patternLen(s) + 1
+			matches = append(matches, NewIntMatch(pos, input[pos:i+1]))
+		}
+
+		for f := tr.suff[s]; f > 0; f = tr.suff[f] {
+			pos := int64(i) - tr.patternLen(s) + 1
+			matches = append(matches, NewIntMatch(pos, input[pos:i+1]))
+		}
+	}
+
+	return matches
+}
+
+func (tr *Trie) MatchBytes(input []byte) []*ByteMatch {
+	intInput := make([]int64, len(input))
+	for i := range input {
+		intInput[i] = int64(input[i])
+	}
+	matches := tr.MatchInts(intInput)
+	byteMatches := make([]*ByteMatch, len(matches))
+	for i := range matches {
+		byteMatches[i] = NewByteMatch(matches[i])
+	}
+
+	return byteMatches
+}
+
+func (tr *Trie) MatchString(input string) []*StringMatch {
+	matches := tr.MatchBytes([]byte(input))
+	stringMatches := make([]*StringMatch, len(matches))
+	for i := range matches {
+		stringMatches[i] = NewStringMatch(matches[i])
+	}
+	return stringMatches
+}
+
+func (tr *Trie) step(s, c int64) int64 {
+	t := tr.base[s] + c
+	if t < int64(len(tr.check)) && tr.check[t] == s {
+		return t
+	}
+
+	for f := tr.fail[s]; f > 0; f = tr.fail[f] {
+		t := tr.base[f] + c
+		if t < int64(len(tr.check)) && tr.check[t] == f {
+			return t
+		}
+	}
+
+	return RootState
+}
+
+func (tr *Trie) pathString(t int64) string {
+	return string(tr.pathBytes(t))
+}
+
+func (tr *Trie) pathBytes(t int64) []byte {
+	pathInts := tr.path(t)
+	pathBytes := make([]byte, len(pathInts))
+	for i := range pathInts {
+		pathBytes[i] = byte(pathInts[i])
+	}
+	return pathBytes
+}
+
+func (tr *Trie) path(t int64) []int64 {
+	if tr.check[t] == -1 {
+		return nil
+	}
+	s := tr.check[t]
+	c := t - tr.base[s]
+	return append(tr.path(s), c)
+}
+
+func (tr *Trie) patternLen(s int64) int64 {
+	if tr.check[s] == -1 {
+		return 0
+	}
+
+	return tr.patternLen(tr.check[s]) + 1
+}
+
+/*
 func NewTrie() *Trie {
 	tr := &Trie{
 		base:         make([]int, 0),
@@ -145,7 +235,6 @@ func (tr *Trie) computeSufLinks(s int) {
 		}
 	}
 }
-
 func (tr *Trie) Match(input string) {
 	bi := []byte(input)
 
@@ -338,3 +427,4 @@ func (tr *Trie) expand(n int) {
 		tr.dict = append(tr.dict, false) // And not in dictionary.
 	}
 }
+*/
