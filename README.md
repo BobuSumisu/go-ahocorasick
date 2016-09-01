@@ -47,7 +47,7 @@ NewTrieGrapher(trie).DrawFailLinks(true).Graph("example.dot")
 And convert to image, e.g.:
 
 ```bash
-    $ dot -Tpng -o example.png example.dot
+$ dot -Tpng -o example.png example.dot
 ```
 
 ![example-trie](example.png)
