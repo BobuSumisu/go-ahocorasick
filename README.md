@@ -10,9 +10,11 @@ access speeds and reduced memory consumption.
 
 Use a `TrieBuilder` to create a `Trie`:
 
-    trie := NewTrieBuilder().
-        AddStrings([]string{"hers", "his", "he", "she"}).
-        Build()
+```go
+trie := NewTrieBuilder().
+    AddStrings([]string{"hers", "his", "he", "she"}).
+    Build()
+```
 
 Match something:
 
