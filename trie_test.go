@@ -27,10 +27,10 @@ func TestPrefix(t *testing.T) {
 
 func TestSuffix(t *testing.T) {
 	trie := NewTrieBuilder(256).
-		AddStringPatterns([]string{"Aho-Corasick", "Corasick", "rasick", "k"}).
+		AddStringPatterns([]string{"Aho-Corasick", "Corasick", "rasick"}).
 		Build()
 
-	NewTrieGrapher(trie).DrawFailLinks(false).Graph("trie.dot")
+	NewTrieGrapher(trie).DrawFailLinks(true).Graph("trie.dot")
 
 	matches := trie.MatchString("Aho-Corasick")
 

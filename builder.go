@@ -144,18 +144,19 @@ func (tb *TrieBuilder) Build() *Trie {
 }
 
 func (tb *TrieBuilder) computeFailLink(s int64) {
-	p := tb.check[s] // The parent of s.
-	if p == -1 {     // No transitions to s, ignore.
+	p := tb.check[s]    // The parent of s.
+	if p == EmptyCell { // No transitions to s, ignore.
 		return
 	}
 
-	tb.computeFailLink(p) // Need to compute the fail link to parent first.
-	c := s - tb.base[p]   // The transition symbol to this state.
+	c := s - tb.base[p] // The transition symbol to this state.
 
 	if p == RootState {
 		// If parent is root, fail to root
 		tb.fail[s] = RootState
 	} else {
+
+		tb.computeFailLink(p)
 
 		// Follow fail links (starting from parent) until we find a state f with
 		// a transition on this states symbol (c).
@@ -165,6 +166,7 @@ func (tb *TrieBuilder) computeFailLink(s int64) {
 			t := tb.base[f] + c
 			if tb.check[t] == f {
 				tb.fail[s] = t
+				break
 			}
 
 			// Compute f's fail link before the next iteration.
