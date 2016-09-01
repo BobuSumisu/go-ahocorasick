@@ -1,6 +1,12 @@
 package ahocorasick
 
-import "testing"
+import (
+	"bufio"
+	"io/ioutil"
+	"os"
+	"strings"
+	"testing"
+)
 
 func TestWiki(t *testing.T) {
 	trie := NewTrieBuilder().AddStrings([]string{
@@ -87,5 +93,55 @@ func TestNoMatch(t *testing.T) {
 
 	if len(matches) != 0 {
 		t.Errorf("expected %d matches, got %d", 0, len(matches))
+	}
+}
+
+func readPatterns(path string) ([][]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+	patterns := make([][]byte, 0)
+
+	for s.Scan() {
+		patterns = append(patterns, []byte(strings.TrimSpace(s.Text())))
+	}
+
+	if err := s.Err(); err != nil {
+		return nil, err
+	}
+
+	return patterns, nil
+}
+
+func BenchmarkBuildNSF(b *testing.B) {
+	patterns, err := readPatterns("./test_data/NSF-ordlisten.cleaned.txt")
+	if err != nil {
+		b.Error(err)
+	}
+
+	for n := 0; n < b.N; n++ {
+		NewTrieBuilder().AddPatterns(patterns[:200]).Build()
+	}
+}
+
+func BenchmarkMatchIbsen(b *testing.B) {
+	patterns, err := readPatterns("./test_data/NSF-ordlisten.cleaned.txt")
+	if err != nil {
+		b.Error(err)
+	}
+
+	input, err := ioutil.ReadFile("./test_data/Ibsen.txt")
+	if err != nil {
+		b.Error(err)
+	}
+
+	trie := NewTrieBuilder().AddPatterns(patterns[:200]).Build()
+
+	for n := 0; n < b.N; n++ {
+		trie.Match(input[:1000])
 	}
 }

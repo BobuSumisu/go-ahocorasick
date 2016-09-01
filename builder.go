@@ -147,7 +147,7 @@ func (tb *TrieBuilder) computeFailLink(s int64) {
 
 			// Set s' fail to f's child if it has a transition.
 			t := tb.base[f] + c
-			if tb.check[t] == f {
+			if t < int64(len(tb.check)) && tb.check[t] == f {
 				tb.fail[s] = t
 				break
 			}
@@ -238,10 +238,10 @@ func (tb *TrieBuilder) relocate(s int64) {
 		tb.dict[t_] = tb.dict[t] // As well as the dictionary value.
 
 		// We must also update all states which had transitions from t to t'.
-		// TODO: This is probabably not the most efficient way of doing this.
-		for i := range tb.check {
-			if tb.check[i] == t {
-				tb.check[i] = t_
+		for c := int64(0); c < AlphabetSize; c++ {
+			u := tb.base[t] + c
+			if u < int64(len(tb.check)) && tb.check[u] == t {
+				tb.check[u] = t_
 			}
 		}
 

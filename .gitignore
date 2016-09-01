@@ -1,2 +1,4 @@
 *.dot
 *.png
+*.pprof
+profile/main
