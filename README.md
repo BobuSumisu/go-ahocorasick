@@ -10,24 +10,31 @@ access speeds and reduced memory consumption.
 
 Use a `TrieBuilder` to create a `Trie`:
 
-	trie := NewTrieBuilder().
-		AddStrings([]string{"hers", "his", "he", "she"}).
-		Build()
+    trie := NewTrieBuilder().
+        AddStrings([]string{"hers", "his", "he", "she"}).
+        Build()
 
 Match something:
 
-	matches := trie.MatchString("I have never tasted a hershey bar.")
+    matches := trie.MatchString("I have never tasted a hershey bar.")
+    fmt.Printf("We got %d matches.\n", len(matches))
 
+    // => We got 4 matches.
 
-	fmt.Printf("We got %d matches.\n", len(matches))
-	for _, match := range matches {
-		fmt.Printf("Matched %q at offset %d.\n", match.Match(), match.Pos())
-	}
+Examine matches:
 
+    for _, match := range matches {
+        fmt.Printf("Matched %q at offset %d.\n", match.Match(), match.Pos())
+    }
+
+    // => Matched "he" at offset 22.
+    // => Matched "hers" at offset 22.
+    // => Matched "she" at offset 25.
+    // => Matched "he" at offset 26.
 
 For debugging you may output the trie in DOT format:
 
-	NewTrieGrapher(trie).DrawFailLinks(true).Graph("example.dot")
+    NewTrieGrapher(trie).DrawFailLinks(true).Graph("example.dot")
 
 And convert to image, e.g.:
 
