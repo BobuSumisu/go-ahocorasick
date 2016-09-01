@@ -1,12 +1,13 @@
 package ahocorasick
 
 const (
-	AlphabetSize int64 = 256
-	RootState    int64 = 0
-	EmptyCell    int64 = -1
-	DefaultBase  int64 = 0
+	AlphabetSize int64 = 256 // The size of the alphabet is fixed to the size of a byte.
+	RootState    int64 = 0   // The root state of the trie is always 0.
+	EmptyCell    int64 = -1  // Represents an unused cell.
+	DefaultBase  int64 = 0   // The default base for new states.
 )
 
+// A TrieBuilder must be used to properly build Tries.
 type TrieBuilder struct {
 	base  []int64
 	check []int64
