@@ -96,6 +96,17 @@ func TestNoMatch(t *testing.T) {
 	}
 }
 
+func TestUtf8(t *testing.T) {
+	trie := NewTrieBuilder().
+		AddStrings([]string{"Øyvind", "lærer", "å", "♡"}).
+		Build()
+	matches := trie.MatchString("Øyvind lærer seg å programmere ♡")
+
+	if len(matches) != 4 {
+		t.Errorf("expected %d matches, got %d", 0, len(matches))
+	}
+}
+
 func readPatterns(path string) ([][]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {

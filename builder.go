@@ -192,44 +192,58 @@ func (tb *TrieBuilder) expandArrays(n int64) {
 	}
 }
 
-func (tb *TrieBuilder) relocate(s int64) {
-	// First find all symbols for which s has a transition.
-	cs := make([]int64, 0)
+// Get all c's for which state s has a transition (that is, where check[base[s]+c] == s).
+func (tb *TrieBuilder) transitions(s int64) []byte {
+	cs := make([]byte, 0)
+
 	for c := int64(0); c < AlphabetSize; c++ {
 		t := tb.base[s] + c
 		if t < int64(len(tb.check)) && tb.check[t] == s {
-			cs = append(cs, c)
+			cs = append(cs, byte(c))
 		}
 	}
+	return cs
+}
+
+// Check wether b is a suitable base for s given it's transitions on cs.
+func (tb *TrieBuilder) suitableBase(b, s int64, cs []byte) bool {
+	for _, c := range cs {
+		t := b + int64(c)
+
+		// All offsets above len(check) is of course empty.
+		if t >= int64(len(tb.check)) {
+			return true
+		}
+
+		if tb.check[t] != EmptyCell {
+			return false
+		}
+	}
+	return true
+}
+
+// Find a suitable (new) base for s.
+func (tb *TrieBuilder) findBase(s int64, cs []byte) int64 {
+	for b := DefaultBase; ; b++ {
+		if tb.suitableBase(b, s, cs) {
+			return b
+		}
+	}
+	return EmptyCell
+}
+
+func (tb *TrieBuilder) relocate(s int64) {
+	// First find all symbols for which s has a transition.
+	cs := tb.transitions(s)
 
 	// Find a new suitable base for s.
-	var b int64 = 0
-	for {
-		foundIt := true
-
-		// Check if the offset b + c is available for every c.
-		for _, c := range cs {
-			t_ := b + c
-			if t_ < int64(len(tb.check)) && tb.check[t_] != EmptyCell {
-				foundIt = false
-				break
-			}
-		}
-
-		if foundIt {
-			// Current base b is OK.
-			break
-		}
-
-		// Test next b.
-		b++
-	}
+	b := tb.findBase(s, cs)
 
 	// Move the base of s to b. First we must update the transitions.
 	for _, c := range cs {
 		// Old t and new t'.
-		t := tb.base[s] + c
-		t_ := b + c
+		t := tb.base[s] + int64(c)
+		t_ := b + int64(c)
 
 		tb.expandArrays(t_) // Ensure arrays are big enough for t'.
 
@@ -240,7 +254,12 @@ func (tb *TrieBuilder) relocate(s int64) {
 		// We must also update all states which had transitions from t to t'.
 		for c := int64(0); c < AlphabetSize; c++ {
 			u := tb.base[t] + c
-			if u < int64(len(tb.check)) && tb.check[u] == t {
+
+			if u >= int64(len(tb.check)) {
+				break
+			}
+
+			if tb.check[u] == t {
 				tb.check[u] = t_
 			}
 		}

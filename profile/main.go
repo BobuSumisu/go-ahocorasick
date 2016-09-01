@@ -24,7 +24,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	numPatterns := 30000
+	numPatterns := 10000
 	if len(os.Args) > 3 {
 		numPatterns, err = strconv.Atoi(os.Args[3])
 		if err != nil {
@@ -62,7 +62,10 @@ func main() {
 
 	// Build trie.
 	trie := ahocorasick.NewTrieBuilder().AddPatterns(patterns[:numPatterns]).Build()
-	matches := trie.Match(input)
 
-	log.Printf("Found %d matches in %v.", len(matches), time.Since(start))
+	for n := 0; n < 1000; n++ {
+		trie.Match(input)
+	}
+
+	log.Printf("Done in %v.", time.Since(start))
 }
