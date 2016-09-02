@@ -18,3 +18,6 @@ func (m *Match) End() int64 { return m.pos + int64(len(m.match)) }
 
 // Get the matched byte pattern.
 func (m *Match) Match() []byte { return m.match }
+
+// Just to make working with strings a little more comfortable.
+func (m *Match) MatchString() string { return string(m.match) }

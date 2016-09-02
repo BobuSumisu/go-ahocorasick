@@ -135,6 +135,17 @@ func TestZeroes(t *testing.T) {
 	}
 }
 
+func TestMatchFirst(t *testing.T) {
+	trie := NewTrieBuilder().AddString("foo").Build()
+
+	match := trie.MatchStringFirst("foo foo foo foo foo foo foo foo foo foo foo foo")
+
+	if match.MatchString() != "a" || match.Pos() != 0 {
+		fmt.Errorf("expected match %q at %d, got match %q at %d",
+			"a", 0, match.MatchString(), match.Pos())
+	}
+}
+
 func readPatterns(path string) ([][]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
