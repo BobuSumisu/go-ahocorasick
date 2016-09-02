@@ -181,3 +181,12 @@ func ExampleReadme() {
 	// Matched "she" at offset 25.
 	// Matched "he" at offset 26.
 }
+
+func ExampleTrie_MatchString() {
+	trie := NewTrieBuilder().
+		AddStrings([]string{"hers", "his", "he", "she"}).
+		Build()
+	matches := trie.MatchString("she is here")
+	fmt.Println(len(matches))
+	// Output: 3
+}

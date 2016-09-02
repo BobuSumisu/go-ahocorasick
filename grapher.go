@@ -7,23 +7,27 @@ import (
 	"unicode"
 )
 
+// A TrieGrapher is used to output a Trie in the DOT graph description language.
 type TrieGrapher struct {
-	trie          *Trie
-	w             io.Writer
-	drawFailLinks bool
+	trie          *Trie     // The Trie to be graphed.
+	w             io.Writer // A writer to print output to.
+	drawFailLinks bool      // Whether to include fail links in the graph.
 }
 
+// Create a new TrieGrapher.
 func NewTrieGrapher(trie *Trie) *TrieGrapher {
 	return &TrieGrapher{
 		trie: trie,
 	}
 }
 
+// Toggle inclusion of fail links in the graph.
 func (tg *TrieGrapher) DrawFailLinks(b bool) *TrieGrapher {
 	tg.drawFailLinks = b
 	return tg
 }
 
+// Output the DOT graph to a file.
 func (tg *TrieGrapher) Graph(path string) error {
 	f, err := os.Create(path)
 	if err != nil {

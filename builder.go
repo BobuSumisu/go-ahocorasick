@@ -16,6 +16,7 @@ type TrieBuilder struct {
 	suff  []int64
 }
 
+// Create and initialize a new TrieBuilder.
 func NewTrieBuilder() *TrieBuilder {
 	tb := &TrieBuilder{
 		base:  make([]int64, 0),
@@ -31,6 +32,7 @@ func NewTrieBuilder() *TrieBuilder {
 	return tb
 }
 
+// Add a new pattern to be built into the resulting Trie.
 func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 	s := RootState
 
@@ -77,6 +79,7 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 	return tb
 }
 
+// A helper method to make adding multiple patterns a little more comfortable.
 func (tb *TrieBuilder) AddPatterns(patterns [][]byte) *TrieBuilder {
 	for _, pattern := range patterns {
 		tb.AddPattern(pattern)
@@ -84,10 +87,12 @@ func (tb *TrieBuilder) AddPatterns(patterns [][]byte) *TrieBuilder {
 	return tb
 }
 
+// A helper method to make adding a string pattern more comfortable.
 func (tb *TrieBuilder) AddString(pattern string) *TrieBuilder {
 	return tb.AddPattern([]byte(pattern))
 }
 
+// A helper method to make adding multiple string patterns a little more comfortable.
 func (tb *TrieBuilder) AddStrings(patterns []string) *TrieBuilder {
 	for _, pattern := range patterns {
 		tb.AddString(pattern)
@@ -95,6 +100,7 @@ func (tb *TrieBuilder) AddStrings(patterns []string) *TrieBuilder {
 	return tb
 }
 
+// Build the trie.
 func (tb *TrieBuilder) Build() *Trie {
 
 	// Initialize link arrays.

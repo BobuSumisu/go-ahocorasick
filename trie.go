@@ -8,6 +8,7 @@ type Trie struct {
 	suff  []int64
 }
 
+// Run the Trie against the provided input and returns potentially matches.
 func (tr *Trie) Match(input []byte) []*Match {
 	matches := make([]*Match, 0)
 
@@ -18,18 +19,19 @@ func (tr *Trie) Match(input []byte) []*Match {
 
 		if tr.dict[s] {
 			pos := int64(i) - tr.patternLen(s) + 1
-			matches = append(matches, NewMatch(pos, input[pos:i+1]))
+			matches = append(matches, newMatch(pos, input[pos:i+1]))
 		}
 
 		for f := tr.suff[s]; f > 0; f = tr.suff[f] {
 			pos := int64(i) - tr.patternLen(f) + 1
-			matches = append(matches, NewMatch(pos, input[pos:i+1]))
+			matches = append(matches, newMatch(pos, input[pos:i+1]))
 		}
 	}
 
 	return matches
 }
 
+// Helper method to make matching strings a little more comfortable.
 func (tr *Trie) MatchString(input string) []*Match {
 	return tr.Match([]byte(input))
 }
