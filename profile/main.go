@@ -17,8 +17,6 @@ import (
 func main() {
 	var err error
 
-	defer profile.Start(profile.ProfilePath(".")).Stop()
-
 	if len(os.Args) < 3 {
 		fmt.Printf("Usage: %s <patterns-file> <input-file> [<num-patterns-to-use>]", os.Args[0])
 		os.Exit(1)
@@ -56,14 +54,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	log.Printf("Running trie on %d bytes of data using %d patterns", len(input), numPatterns)
-
-	start := time.Now()
+	times := 1000
 
 	// Build trie.
 	trie := ahocorasick.NewTrieBuilder().AddPatterns(patterns[:numPatterns]).Build()
 
-	for n := 0; n < 1000; n++ {
+	log.Printf("Running trie %d times on %d bytes of data using %d patterns", times, len(input), numPatterns)
+	defer profile.Start(profile.ProfilePath(".")).Stop()
+	start := time.Now()
+
+	for n := 0; n < times; n++ {
 		trie.Match(input)
 	}
 
