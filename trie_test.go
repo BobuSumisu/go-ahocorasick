@@ -109,6 +109,18 @@ func TestUtf8(t *testing.T) {
 	}
 }
 
+func TestZeroes(t *testing.T) {
+	trie := NewTrieBuilder().
+		AddPattern([]byte{0x00, 0x00}).
+		Build()
+
+	matches := trie.MatchString("\x00\x00Aho\x00\x00Cora\x00\x00sick\x00\x00\x00\x00")
+
+	if len(matches) != 6 {
+		t.Errorf("expected %d matches, got %d", 6, len(matches))
+	}
+}
+
 func readPatterns(path string) ([][]byte, error) {
 	f, err := os.Open(path)
 	if err != nil {
