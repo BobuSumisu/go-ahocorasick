@@ -52,7 +52,7 @@ func (tg *TrieGrapher) Graph(path string) error {
 
 func (tg *TrieGrapher) graphState(s, c int64) {
 
-	if tg.trie.dict[s] {
+	if tg.trie.dict[s] != 0 {
 		fmt.Fprintf(tg.w, "\t%d [label=%q, shape=doublecircle];\n", s, label(c-1))
 	} else {
 		fmt.Fprintf(tg.w, "\t%d [label=%q];\n", s, label(c-1))

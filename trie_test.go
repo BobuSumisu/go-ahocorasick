@@ -2,6 +2,7 @@ package ahocorasick
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -11,13 +12,26 @@ import (
 )
 
 func TestWiki(t *testing.T) {
-	trie := NewTrieBuilder().AddStrings([]string{
+	patterns := []string{
 		"a", "ab", "bab", "bc", "bca", "c", "caa",
-	}).Build()
-	matches := trie.MatchString("abracadabra") // 5 a's, 2 ab's, 1 c's = 8
+	}
+	input := "Aho-Corasick"
+	expected := []*Match{
+		&Match{match: []byte("a"), pos: 7},
+		&Match{match: []byte("c"), pos: 10},
+	}
 
-	if len(matches) != 8 {
-		t.Errorf("expected %d matches, got %d", 8, len(matches))
+	matches := NewTrieBuilder().AddStrings(patterns).Build().MatchString(input)
+
+	if len(expected) != len(matches) {
+		t.Errorf("expected %d matches, got %d", len(expected), len(matches))
+	} else {
+		for i := range expected {
+			if !bytes.Equal(expected[i].Match(), matches[i].Match()) ||
+				expected[i].Pos() != matches[i].Pos() {
+				t.Errorf("expected %v, got %v", expected[i], matches[i])
+			}
+		}
 	}
 }
 

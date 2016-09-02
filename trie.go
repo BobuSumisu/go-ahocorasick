@@ -8,7 +8,7 @@ package ahocorasick
 type Trie struct {
 	base  []int64
 	check []int64
-	dict  []bool
+	dict  []int64
 	fail  []int64
 	suff  []int64
 }
@@ -22,13 +22,15 @@ func (tr *Trie) Match(input []byte) []*Match {
 	for i, c := range input {
 		s = tr.step(s, c+1)
 
-		if tr.dict[s] {
-			pos := int64(i) - tr.patternLen(s) + 1
+		if tr.dict[s] != 0 {
+			// pos := int64(i) - tr.patternLen(s) + 1
+			pos := int64(i+1) - tr.dict[s]
 			matches = append(matches, newMatch(pos, input[pos:i+1]))
 		}
 
 		for f := tr.suff[s]; f > 0; f = tr.suff[f] {
-			pos := int64(i) - tr.patternLen(f) + 1
+			// pos := int64(i) - tr.patternLen(f) + 1
+			pos := int64(i+1) - tr.dict[f]
 			matches = append(matches, newMatch(pos, input[pos:i+1]))
 		}
 	}
@@ -82,12 +84,4 @@ func (tr *Trie) path(t int64) []int64 {
 	s := tr.check[t]
 	c := t - tr.base[s]
 	return append(tr.path(s), c)
-}
-
-func (tr *Trie) patternLen(s int64) int64 {
-	if tr.check[s] == 0 {
-		return 1
-	}
-
-	return tr.patternLen(tr.check[s]) + 1
 }

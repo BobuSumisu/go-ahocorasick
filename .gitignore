@@ -2,4 +2,4 @@
 *.png
 !example.png
 *.pprof
-profile/main
+profile/profile

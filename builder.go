@@ -11,7 +11,7 @@ const (
 type TrieBuilder struct {
 	base  []int64
 	check []int64
-	dict  []bool
+	dict  []int64
 	fail  []int64
 	suff  []int64
 }
@@ -21,7 +21,7 @@ func NewTrieBuilder() *TrieBuilder {
 	tb := &TrieBuilder{
 		base:  make([]int64, 0),
 		check: make([]int64, 0),
-		dict:  make([]bool, 0),
+		dict:  make([]int64, 0),
 		fail:  make([]int64, 0),
 		suff:  make([]int64, 0),
 	}
@@ -73,8 +73,8 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 		s = t
 	}
 
-	// Mark s as in dictionary.
-	tb.dict[s] = true
+	// Mark s as in dictionary by setting pattern len in dict.
+	tb.dict[s] = int64(len(pattern))
 
 	return tb
 }
@@ -185,7 +185,7 @@ func (tb *TrieBuilder) computeFailLink(s int64) {
 func (tb *TrieBuilder) computeSuffLink(s int64) {
 	// Follow fail links until we (possibly) find a state in the dictionary.
 	for f := tb.fail[s]; f > 0; f = tb.fail[f] {
-		if tb.dict[f] {
+		if tb.dict[f] != 0 {
 			tb.suff[s] = f
 			return
 		}
@@ -195,7 +195,7 @@ func (tb *TrieBuilder) computeSuffLink(s int64) {
 func (tb *TrieBuilder) addState() {
 	tb.base = append(tb.base, DefaultBase)
 	tb.check = append(tb.check, EmptyCell)
-	tb.dict = append(tb.dict, false)
+	tb.dict = append(tb.dict, 0)
 }
 
 func (tb *TrieBuilder) expandArrays(n int64) {
@@ -278,7 +278,7 @@ func (tb *TrieBuilder) relocate(s int64) {
 
 		// Unset old tb.check and dictionary values for t.
 		tb.check[t] = EmptyCell
-		tb.dict[t] = false
+		tb.dict[t] = 0
 	}
 
 	// Finally we can move the base for s.
