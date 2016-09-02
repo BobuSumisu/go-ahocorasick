@@ -1,3 +1,8 @@
+// Package ahocorasick implements the Aho-Corasick string searching algorithm in Go.
+//
+// The algorithm is implemented using a double array trie for increased access speed and reduced memory consumption.
+//
+// The algorithm uses an alphabet size of 256, so can only be used to match byte patterns.
 package ahocorasick
 
 type Trie struct {
