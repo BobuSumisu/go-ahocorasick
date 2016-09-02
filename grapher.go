@@ -53,9 +53,9 @@ func (tg *TrieGrapher) Graph(path string) error {
 func (tg *TrieGrapher) graphState(s, c int64) {
 
 	if tg.trie.dict[s] {
-		fmt.Fprintf(tg.w, "\t%d [label=%q, shape=doublecircle];\n", s, label(c))
+		fmt.Fprintf(tg.w, "\t%d [label=%q, shape=doublecircle];\n", s, label(c-1))
 	} else {
-		fmt.Fprintf(tg.w, "\t%d [label=%q];\n", s, label(c))
+		fmt.Fprintf(tg.w, "\t%d [label=%q];\n", s, label(c-1))
 	}
 
 	for c := int64(0); c < AlphabetSize; c++ {
@@ -76,7 +76,7 @@ func (tg *TrieGrapher) graphState(s, c int64) {
 }
 
 func label(c int64) string {
-	if c == -1 {
+	if c <= 0 {
 		return ""
 	}
 

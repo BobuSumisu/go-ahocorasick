@@ -37,7 +37,7 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 	s := RootState
 
 	for _, c := range pattern {
-		t := tb.base[s] + int64(c)
+		t := tb.base[s] + int64(c+1)
 
 		if t >= int64(len(tb.check)) || tb.check[t] == EmptyCell {
 			// Cell is empty: expand arrays and set transition.
@@ -54,15 +54,15 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 			// a transition to s.
 			oc := s - tb.base[o]
 			if tb.check[tb.base[o]+oc] != o {
-				oc = -1 // State o does not have a transition to s.
+				oc = EmptyCell // State o does not have a transition to s.
 			}
 
 			tb.relocate(o)
 
 			// Update s and t if o had transitions to s.
-			if oc != -1 {
+			if oc != EmptyCell {
 				s = tb.base[o] + oc
-				t = tb.base[s] + int64(c)
+				t = tb.base[s] + int64(c+1)
 			}
 
 			// Set transition.
@@ -134,10 +134,18 @@ func (tb *TrieBuilder) Build() *Trie {
 }
 
 func (tb *TrieBuilder) computeFailLink(s int64) {
+	if tb.fail[s] != EmptyCell {
+		return // Avoid computing more than one time.
+	}
+
 	p := tb.check[s]    // The parent of s.
 	if p == EmptyCell { // No transitions to s, ignore.
 		return
+	} else if p == s {
+		return // If s is it's own parent.
 	}
+
+	tb.computeFailLink(p)
 
 	c := s - tb.base[p] // The transition symbol to this state.
 
@@ -146,12 +154,9 @@ func (tb *TrieBuilder) computeFailLink(s int64) {
 		tb.fail[s] = RootState
 	} else {
 
-		tb.computeFailLink(p)
-
 		// Follow fail links (starting from parent) until we find a state f with
 		// a transition on this states symbol (c).
 		for f := tb.fail[p]; f > 0; f = tb.fail[f] {
-
 			// Set s' fail to f's child if it has a transition.
 			t := tb.base[f] + c
 			if t < int64(len(tb.check)) && tb.check[t] == f {
@@ -204,9 +209,9 @@ func (tb *TrieBuilder) transitions(s int64) []byte {
 	cs := make([]byte, 0)
 
 	for c := int64(0); c < AlphabetSize; c++ {
-		t := tb.base[s] + c
+		t := tb.base[s] + (c + 1)
 		if t < int64(len(tb.check)) && tb.check[t] == s {
-			cs = append(cs, byte(c))
+			cs = append(cs, byte(c+1))
 		}
 	}
 	return cs
@@ -260,7 +265,7 @@ func (tb *TrieBuilder) relocate(s int64) {
 
 		// We must also update all states which had transitions from t to t'.
 		for c := int64(0); c < AlphabetSize; c++ {
-			u := tb.base[t] + c
+			u := tb.base[t] + (c + 1)
 
 			if u >= int64(len(tb.check)) {
 				break

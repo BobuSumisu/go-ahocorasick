@@ -20,7 +20,7 @@ func (tr *Trie) Match(input []byte) []*Match {
 	s := RootState
 
 	for i, c := range input {
-		s = tr.step(s, c)
+		s = tr.step(s, c+1)
 
 		if tr.dict[s] {
 			pos := int64(i) - tr.patternLen(s) + 1
