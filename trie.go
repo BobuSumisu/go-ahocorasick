@@ -77,6 +77,16 @@ func (tr *Trie) MatchStringFirst(input string) *Match {
 	return tr.MatchFirst([]byte(input))
 }
 
+func (tr *Trie) NumPatterns() int64 {
+	var c int64 = 0
+	for _, n := range tr.dict {
+		if n != 0 {
+			c += 1
+		}
+	}
+	return c
+}
+
 func (tr *Trie) step(s int64, c byte) int64 {
 	t := tr.base[s] + int64(c)
 	if t < int64(len(tr.check)) && tr.check[t] == s {

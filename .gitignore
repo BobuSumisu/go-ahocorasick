@@ -3,3 +3,4 @@
 !example.png
 *.pprof
 profile/profile
+*.trie

@@ -1,13 +1,10 @@
 package ahocorasick
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"os/exec"
-	"strings"
 	"testing"
 )
 
@@ -146,29 +143,8 @@ func TestMatchFirst(t *testing.T) {
 	}
 }
 
-func readPatterns(path string) ([][]byte, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	s := bufio.NewScanner(f)
-	patterns := make([][]byte, 0)
-
-	for s.Scan() {
-		patterns = append(patterns, []byte(strings.TrimSpace(s.Text())))
-	}
-
-	if err := s.Err(); err != nil {
-		return nil, err
-	}
-
-	return patterns, nil
-}
-
 func BenchmarkBuildNSF(b *testing.B) {
-	patterns, err := readPatterns("./test_data/NSF-ordlisten.cleaned.txt")
+	patterns, err := ReadStrings("./test_data/NSF-ordlisten.cleaned.txt")
 	if err != nil {
 		b.Error(err)
 	}
@@ -179,7 +155,7 @@ func BenchmarkBuildNSF(b *testing.B) {
 }
 
 func BenchmarkMatchIbsen(b *testing.B) {
-	patterns, err := readPatterns("./test_data/NSF-ordlisten.cleaned.txt")
+	patterns, err := ReadStrings("./test_data/NSF-ordlisten.cleaned.txt")
 	if err != nil {
 		b.Error(err)
 	}
