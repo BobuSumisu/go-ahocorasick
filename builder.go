@@ -37,7 +37,7 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 	s := RootState
 
 	for _, c := range pattern {
-		t := tb.base[s] + int64(c+1)
+		t := tb.base[s] + encodeByte(c)
 
 		if t >= int64(len(tb.check)) || tb.check[t] == EmptyCell {
 			// Cell is empty: expand arrays and set transition.
@@ -62,7 +62,7 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 			// Update s and t if o had transitions to s.
 			if oc != EmptyCell {
 				s = tb.base[o] + oc
-				t = tb.base[s] + int64(c+1)
+				t = tb.base[s] + encodeByte(c)
 			}
 
 			// Set transition.
@@ -283,4 +283,10 @@ func (tb *TrieBuilder) relocate(s int64) {
 
 	// Finally we can move the base for s.
 	tb.base[s] = b
+}
+
+func encodeByte(b byte) int64 {
+	// "Optimize" for ASCII text by shifting to 0x41 ('A').
+	// We also add one here to avoid c = 0.
+	return int64(((int64(b) - 0x41 + AlphabetSize) % AlphabetSize) + 1)
 }

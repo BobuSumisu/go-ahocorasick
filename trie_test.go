@@ -1,145 +1,135 @@
 package ahocorasick
 
 import (
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os/exec"
 	"testing"
 )
 
-func TestWiki(t *testing.T) {
-	patterns := []string{
-		"a", "ab", "bab", "bc", "bca", "c", "caa",
-	}
-	input := "Aho-Corasick"
-	expected := []*Match{
-		&Match{match: []byte("a"), pos: 7},
-		&Match{match: []byte("c"), pos: 10},
+func TestTrie(t *testing.T) {
+	cases := []struct {
+		name     string
+		patterns []string
+		input    string
+		expected []*Match
+	}{
+		{
+			"Wikipedia",
+			[]string{"a", "ab", "bab", "bc", "bca", "c", "caa"},
+			"Aho-Corasick",
+			[]*Match{
+				newMatchString(7, "a"),
+				newMatchString(10, "c"),
+			},
+		},
+		{
+			"Prefix",
+			[]string{"Aho-Corasick", "Aho-Cora", "Aho", "A"},
+			"Aho-Corasick",
+			[]*Match{
+				newMatchString(0, "A"),
+				newMatchString(0, "Aho"),
+				newMatchString(0, "Aho-Cora"),
+				newMatchString(0, "Aho-Corasick"),
+			},
+		},
+		{
+			"Suffix",
+			[]string{"Aho-Corasick", "Corasick", "sick", "k"},
+			"Aho-Corasick",
+			[]*Match{
+				newMatchString(0, "Aho-Corasick"),
+				newMatchString(4, "Corasick"),
+				newMatchString(8, "sick"),
+				newMatchString(11, "k"),
+			},
+		},
+		{
+			"Infix",
+			[]string{"Aho-Corasick", "ho-Corasi", "o-Co", "-"},
+			"Aho-Corasick",
+			[]*Match{
+				newMatchString(3, "-"),
+				newMatchString(2, "o-Co"),
+				newMatchString(1, "ho-Corasi"),
+				newMatchString(0, "Aho-Corasick"),
+			},
+		},
+		{
+			"Overlap",
+			[]string{"Aho-Co", "ho-Cora", "o-Coras", "-Corasick"},
+			"Aho-Corasick",
+			[]*Match{
+				newMatchString(0, "Aho-Co"),
+				newMatchString(1, "ho-Cora"),
+				newMatchString(2, "o-Coras"),
+				newMatchString(3, "-Corasick"),
+			},
+		},
+		{
+			"Adjacent",
+			[]string{"Ah", "o-Co", "ras", "ick"},
+			"Aho-Corasick",
+			[]*Match{
+				newMatchString(0, "Ah"),
+				newMatchString(2, "o-Co"),
+				newMatchString(6, "ras"),
+				newMatchString(9, "ick"),
+			},
+		},
+		{
+			"SingleSymbol",
+			[]string{"o"},
+			"Aho-Corasick",
+			[]*Match{
+				newMatchString(2, "o"),
+				newMatchString(5, "o"),
+			},
+		},
+		{
+			"NoMatch",
+			[]string{"Gazorpazopfield", "Knuth", "O"},
+			"Aho-Corasick",
+			[]*Match{},
+		},
+		{
+			"Zeroes",
+			[]string{"\x00\x00"},
+			"\x00\x00Aho\x00\x00-\x00\x00Corasick\x00\x00",
+			[]*Match{
+				newMatchString(0, "\x00\x00"),
+				newMatchString(5, "\x00\x00"),
+				newMatchString(8, "\x00\x00"),
+				newMatchString(18, "\x00\x00"),
+			},
+		},
 	}
 
-	matches := NewTrieBuilder().AddStrings(patterns).Build().MatchString(input)
+	for _, c := range cases {
+		tr := NewTrieBuilder().AddStrings(c.patterns).Build()
+		matches := tr.MatchString(c.input)
 
-	if len(expected) != len(matches) {
-		t.Errorf("expected %d matches, got %d", len(expected), len(matches))
-	} else {
-		for i := range expected {
-			if !bytes.Equal(expected[i].Match(), matches[i].Match()) ||
-				expected[i].Pos() != matches[i].Pos() {
-				t.Errorf("expected %v, got %v", expected[i], matches[i])
+		if len(matches) != len(c.expected) {
+			t.Errorf("%s: expected %d matches, got %d", c.name, len(c.expected), len(matches))
+			continue
+		}
+
+		for i := range matches {
+			if !MatchEqual(matches[i], c.expected[i]) {
+				t.Errorf("%s: expected %v, got %v", c.name, matches[i], c.expected[i])
 			}
 		}
 	}
 }
 
-func TestPrefix(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"Aho-Corasick", "Aho-Cora", "Aho", "A"}).
-		Build()
-	matches := trie.MatchString("Aho-Corasick")
-
-	if len(matches) != 4 {
-		t.Errorf("expected %d matches, got %d", 4, len(matches))
-	}
-}
-
-func TestSuffix(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"Aho-Corasick", "Corasick", "rasick", "k"}).
-		Build()
-	matches := trie.MatchString("Aho-Corasick")
-
-	if len(matches) != 4 {
-		t.Errorf("expected %d matches, got %d", 4, len(matches))
-	}
-}
-
-func TestInfix(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"Aho-Corasick", "ho-Corasi", "-Cora", "-"}).
-		Build()
-	matches := trie.MatchString("Aho-Corasick")
-
-	if len(matches) != 4 {
-		t.Errorf("expected %d matches, got %d", 4, len(matches))
-	}
-}
-
-func TestOverlap(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"Aho-Co", "ho-Cora", "o-Coras", "-Corasick"}).
-		Build()
-	matches := trie.MatchString("Aho-Corasick")
-
-	if len(matches) != 4 {
-		t.Errorf("expected %d matches, got %d", 4, len(matches))
-	}
-}
-
-func TestAdjacent(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"Ah", "o-Co", "ras", "ick"}).
-		Build()
-	matches := trie.MatchString("Aho-Corasick")
-
-	if len(matches) != 4 {
-		t.Errorf("expected %d matches, got %d", 4, len(matches))
-	}
-}
-
-func TestSingleSymbol(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"o"}).
-		Build()
-	matches := trie.MatchString("Aho-Corasick")
-
-	if len(matches) != 2 {
-		t.Errorf("expected %d matches, got %d", 2, len(matches))
-	}
-}
-
-func TestNoMatch(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"Gazorpazorpfield", "Knuth", "b"}).
-		Build()
-	matches := trie.MatchString("Aho-Corasick")
-
-	if len(matches) != 0 {
-		t.Errorf("expected %d matches, got %d", 0, len(matches))
-	}
-}
-
-func TestUtf8(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddStrings([]string{"Øyvind", "lærer", "å", "♡"}).
-		Build()
-	matches := trie.MatchString("Øyvind lærer seg å programmere ♡")
-
-	if len(matches) != 4 {
-		t.Errorf("expected %d matches, got %d", 0, len(matches))
-	}
-}
-
-func TestZeroes(t *testing.T) {
-	trie := NewTrieBuilder().
-		AddPattern([]byte{0x00, 0x00}).
-		Build()
-
-	matches := trie.MatchString("\x00\x00Aho\x00\x00Cora\x00\x00sick\x00\x00\x00\x00")
-
-	if len(matches) != 6 {
-		t.Errorf("expected %d matches, got %d", 6, len(matches))
-	}
-}
-
 func TestMatchFirst(t *testing.T) {
-	trie := NewTrieBuilder().AddString("foo").Build()
+	trie := NewTrieBuilder().AddString("o").Build()
+	match := trie.MatchStringFirst("Aho-Corasick")
+	expected := newMatchString(2, "o")
 
-	match := trie.MatchStringFirst("foo foo foo foo foo foo foo foo foo foo foo foo")
-
-	if match.MatchString() != "a" || match.Pos() != 0 {
-		fmt.Errorf("expected match %q at %d, got match %q at %d",
-			"a", 0, match.MatchString(), match.Pos())
+	if !MatchEqual(match, expected) {
+		fmt.Errorf("expected %v, got %v", expected, match)
 	}
 }
 
