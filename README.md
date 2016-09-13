@@ -55,3 +55,40 @@ $ dot -Tpng -o example.png example.dot
 ```
 
 ![example-trie](example.png)
+
+## Building
+
+You can use `ReadStrings` or `ReadHex` to read patterns from a file (one pattern on each line).
+
+```go
+patterns, err := ReadStrings("patterns.txt")
+if err != nil {
+    log.Fatal(err)
+}
+
+trie := NewTrieBuilder().AddPatterns(patterns).Build()
+```
+
+## Saving/Loading
+
+Building a large trie can take some time:
+
+![chart](chart.png)
+
+So you can create a trie and save to file and load it instead of recreating it each time:
+
+```go
+err := SaveTrie(trie, "my.trie")
+if err != nil {
+    log.Fatal(err)
+}
+```
+
+And later:
+
+```go
+trie, err := LoadTrie("my.trie")
+if err != nil {
+    log.Fatal(err)
+}
+```

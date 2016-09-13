@@ -1,6 +1,7 @@
 *.dot
 *.png
 !example.png
+!chart.png
 *.pprof
 profile/profile
 *.trie
