@@ -37,7 +37,7 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 	s := RootState
 
 	for _, c := range pattern {
-		t := tb.base[s] + encodeByte(c)
+		t := tb.base[s] + EncodeByte(c)
 
 		if t >= int64(len(tb.check)) || tb.check[t] == EmptyCell {
 			// Cell is empty: expand arrays and set transition.
@@ -62,7 +62,7 @@ func (tb *TrieBuilder) AddPattern(pattern []byte) *TrieBuilder {
 			// Update s and t if o had transitions to s.
 			if oc != EmptyCell {
 				s = tb.base[o] + oc
-				t = tb.base[s] + encodeByte(c)
+				t = tb.base[s] + EncodeByte(c)
 			}
 
 			// Set transition.
@@ -205,20 +205,20 @@ func (tb *TrieBuilder) expandArrays(n int64) {
 }
 
 // Get all c's for which state s has a transition (that is, where check[base[s]+c] == s).
-func (tb *TrieBuilder) transitions(s int64) []byte {
-	cs := make([]byte, 0)
+func (tb *TrieBuilder) transitions(s int64) []int64 {
+	cs := make([]int64, 0)
 
-	for c := int64(0); c < AlphabetSize; c++ {
+	for c := int64(0); c < AlphabetSize+1; c++ {
 		t := tb.base[s] + (c + 1)
 		if t < int64(len(tb.check)) && tb.check[t] == s {
-			cs = append(cs, byte(c+1))
+			cs = append(cs, c+1)
 		}
 	}
 	return cs
 }
 
 // Check wether b is a suitable base for s given it's transitions on cs.
-func (tb *TrieBuilder) suitableBase(b, s int64, cs []byte) bool {
+func (tb *TrieBuilder) suitableBase(b, s int64, cs []int64) bool {
 	for _, c := range cs {
 		t := b + int64(c)
 
@@ -235,7 +235,7 @@ func (tb *TrieBuilder) suitableBase(b, s int64, cs []byte) bool {
 }
 
 // Find a suitable (new) base for s.
-func (tb *TrieBuilder) findBase(s int64, cs []byte) int64 {
+func (tb *TrieBuilder) findBase(s int64, cs []int64) int64 {
 	for b := DefaultBase; ; b++ {
 		if tb.suitableBase(b, s, cs) {
 			return b
@@ -264,7 +264,7 @@ func (tb *TrieBuilder) relocate(s int64) {
 		tb.dict[t_] = tb.dict[t] // As well as the dictionary value.
 
 		// We must also update all states which had transitions from t to t'.
-		for c := int64(0); c < AlphabetSize; c++ {
+		for c := int64(0); c < AlphabetSize+1; c++ {
 			u := tb.base[t] + (c + 1)
 
 			if u >= int64(len(tb.check)) {
@@ -285,8 +285,18 @@ func (tb *TrieBuilder) relocate(s int64) {
 	tb.base[s] = b
 }
 
-func encodeByte(b byte) int64 {
+func EncodeByte(b byte) int64 {
 	// "Optimize" for ASCII text by shifting to 0x41 ('A').
+
+	return ((int64(b) - 0x41 + AlphabetSize) % AlphabetSize) + 1
+
+	// return (int64(b) - 0x41 + AlphabetSize) % AlphabetSize
+
 	// We also add one here to avoid c = 0.
-	return int64(((int64(b) - 0x41 + AlphabetSize) % AlphabetSize) + 1)
+	// return int64(((int64(b) - 0x41 + AlphabetSize) % AlphabetSize) + 1)
+}
+
+func DecodeByte(e int64) byte {
+	return byte((e+0x41)%AlphabetSize) - 1
+	// return byte((e + 0x42 + AlphabetSize) % AlphabetSize)
 }

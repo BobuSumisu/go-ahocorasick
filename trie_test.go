@@ -104,6 +104,17 @@ func TestTrie(t *testing.T) {
 				newMatchString(18, "\x00\x00"),
 			},
 		},
+		{
+			"Alphabetsize",
+			[]string{"\xff\xff"},
+			"\xff\xffAho\xfe\xfe-\xff\xffCorasick\xff\xff\xff",
+			[]*Match{
+				newMatchString(0, "\xff\xff"),
+				newMatchString(8, "\xff\xff"),
+				newMatchString(18, "\xff\xff"),
+				newMatchString(19, "\xff\xff"),
+			},
+		},
 	}
 
 	for _, c := range cases {

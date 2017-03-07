@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"unicode"
 )
 
 // A TrieGrapher is used to output a Trie in the DOT graph description language.
@@ -53,12 +52,12 @@ func (tg *TrieGrapher) Graph(path string) error {
 func (tg *TrieGrapher) graphState(s, c int64) {
 
 	if tg.trie.dict[s] != 0 {
-		fmt.Fprintf(tg.w, "\t%d [label=%q, shape=doublecircle];\n", s, label(c-1))
+		fmt.Fprintf(tg.w, "\t%d [label=%q, shape=doublecircle];\n", s, label(c))
 	} else {
-		fmt.Fprintf(tg.w, "\t%d [label=%q];\n", s, label(c-1))
+		fmt.Fprintf(tg.w, "\t%d [label=%q];\n", s, label(c))
 	}
 
-	for c := int64(0); c < AlphabetSize; c++ {
+	for c := int64(0); c < AlphabetSize+1; c++ {
 		t := tg.trie.base[s] + c
 		if t < int64(len(tg.trie.check)) && tg.trie.check[t] == s {
 			tg.graphState(t, c)
@@ -76,13 +75,19 @@ func (tg *TrieGrapher) graphState(s, c int64) {
 }
 
 func label(c int64) string {
-	if c <= 0 {
+	if c == EmptyCell {
 		return ""
 	}
 
-	if unicode.IsPrint(rune(byte(c))) {
-		return fmt.Sprintf("%c", byte(c))
+	b := DecodeByte(c)
+
+	if isAlphaNum(b) {
+		return fmt.Sprintf("%c", b)
 	}
 
-	return fmt.Sprintf("%x", c)
+	return fmt.Sprintf("0x%02x", b)
+}
+
+func isAlphaNum(b byte) bool {
+	return b >= 0x20 && b <= 0x7e
 }

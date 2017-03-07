@@ -30,7 +30,7 @@ func (tr *Trie) Match(input []byte) []*Match {
 	s := RootState
 
 	for i, c := range input {
-		s = tr.step(s, encodeByte(c))
+		s = tr.step(s, EncodeByte(c))
 
 		if tr.dict[s] != 0 {
 			pos := int64(i+1) - tr.dict[s]
@@ -51,7 +51,7 @@ func (tr *Trie) MatchFirst(input []byte) *Match {
 	s := RootState
 
 	for i, c := range input {
-		s = tr.step(s, encodeByte(c))
+		s = tr.step(s, EncodeByte(c))
 
 		if tr.dict[s] != 0 {
 			pos := int64(i+1) - tr.dict[s]
