@@ -285,18 +285,12 @@ func (tb *TrieBuilder) relocate(s int64) {
 	tb.base[s] = b
 }
 
+// EncodeByte optimizes for ASCII text by shifting to 0x41 ('A').
+// Also adds one to avoid byte == 0.
 func EncodeByte(b byte) int64 {
-	// "Optimize" for ASCII text by shifting to 0x41 ('A').
-
 	return ((int64(b) - 0x41 + AlphabetSize) % AlphabetSize) + 1
-
-	// return (int64(b) - 0x41 + AlphabetSize) % AlphabetSize
-
-	// We also add one here to avoid c = 0.
-	// return int64(((int64(b) - 0x41 + AlphabetSize) % AlphabetSize) + 1)
 }
 
 func DecodeByte(e int64) byte {
 	return byte((e+0x41)%AlphabetSize) - 1
-	// return byte((e + 0x42 + AlphabetSize) % AlphabetSize)
 }
