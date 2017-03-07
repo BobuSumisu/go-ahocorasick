@@ -149,10 +149,51 @@ func BenchmarkBuildNSF(b *testing.B) {
 	if err != nil {
 		b.Error(err)
 	}
-
-	for n := 0; n < b.N; n++ {
-		NewTrieBuilder().AddPatterns(patterns[:200]).Build()
-	}
+	b.Run("10", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:10]).Build()
+		}
+	})
+	b.Run("50", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:50]).Build()
+		}
+	})
+	b.Run("100", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:100]).Build()
+		}
+	})
+	b.Run("500", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:500]).Build()
+		}
+	})
+	b.Run("1000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:1000]).Build()
+		}
+	})
+	b.Run("5000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:5000]).Build()
+		}
+	})
+	b.Run("10000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:10000]).Build()
+		}
+	})
+	b.Run("50000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:50000]).Build()
+		}
+	})
+	b.Run("100000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			NewTrieBuilder().AddPatterns(patterns[:100000]).Build()
+		}
+	})
 }
 
 func BenchmarkMatchIbsen(b *testing.B) {
@@ -166,11 +207,43 @@ func BenchmarkMatchIbsen(b *testing.B) {
 		b.Error(err)
 	}
 
-	trie := NewTrieBuilder().AddPatterns(patterns[:200]).Build()
+	trie := NewTrieBuilder().AddPatterns(patterns[:10000]).Build()
 
-	for n := 0; n < b.N; n++ {
-		trie.Match(input[:1000])
-	}
+	b.Run("100", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			trie.Match(input[:100])
+		}
+	})
+	b.Run("500", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			trie.Match(input[:500])
+		}
+	})
+	b.Run("1000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			trie.Match(input[:1000])
+		}
+	})
+	b.Run("5000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			trie.Match(input[:5000])
+		}
+	})
+	b.Run("10000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			trie.Match(input[:10000])
+		}
+	})
+	b.Run("50000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			trie.Match(input[:50000])
+		}
+	})
+	b.Run("100000", func(b *testing.B) {
+		for n := 0; n < b.N; n++ {
+			trie.Match(input[:100000])
+		}
+	})
 }
 
 func ExampleReadme() {

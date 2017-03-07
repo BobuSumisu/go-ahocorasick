@@ -5,3 +5,4 @@
 *.pprof
 profile/profile
 *.trie
+plot.py
