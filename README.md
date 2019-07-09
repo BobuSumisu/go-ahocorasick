@@ -1,5 +1,7 @@
 # Aho-Corasick
 
+[![Build Status](https://travis-ci.com/BobuSumisu/go-ahocorasick.svg?branch=master)](https://travis-ci.com/BobuSumisu/go-ahocorasick)
+
 Aho-Corasick string search algorithm implemented in Go.
 
 Uses a [double array trie](https://linux.thai.net/~thep/datrie/datrie.html) for improved
