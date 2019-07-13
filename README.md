@@ -1,5 +1,8 @@
 # Aho-Corasick
 
+:warning: Use the newer [aho-corasick](https://github.com/BobuSumisu/aho-corasick) instead. This implementation does
+not scale well with number of patterns. :warning:
+
 [![Build Status](https://travis-ci.com/BobuSumisu/go-ahocorasick.svg?branch=master)](https://travis-ci.com/BobuSumisu/go-ahocorasick)
 
 Aho-Corasick string search algorithm implemented in Go.
